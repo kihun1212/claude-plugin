@@ -1,0 +1,16 @@
+{
+  "name": "kihoon-plugins",
+  "owner": {
+    "name": "kihoon"
+  },
+  "metadata": {
+    "description": "Claude Code plugins"
+  },
+  "plugins": [
+    {
+      "name": "second-brain",
+      "source": "./second-brain",
+      "description": "Search and query personal wiki."
+    }
+  ]
+}
