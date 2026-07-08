@@ -1,0 +1,8 @@
+{
+  "name": "second-brain",
+  "description": "Search your personal markdown wiki/notes through QMD, scoped to your wiki collection. Replaces ad-hoc 'search my wiki' instructions with auto-triggering skills and a token-isolated search agent.",
+  "version": "2.0.0",
+  "author": {
+    "name": "kihoon"
+  }
+}
