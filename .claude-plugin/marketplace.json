@@ -11,6 +11,11 @@
       "name": "second-brain",
       "source": "./second-brain",
       "description": "Search and query personal wiki."
+    },
+    {
+      "name": "copilot-delegate",
+      "source": "./copilot-delegate",
+      "description": "Delegate heavy-context, light-judgment tasks to GitHub Copilot CLI and recover only a compact result."
     }
   ]
 }
