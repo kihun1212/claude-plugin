@@ -1,7 +1,7 @@
 # copilot-delegate
 
-Delegate heavy-context, light-judgment work to the [GitHub Copilot CLI](https://github.com/github/copilot-cli), recovering only a compact result. <br>
-Installing this plugin lets you drop the "Copilot Delegation Rules" section from `CLAUDE.md` — the agent triggers proactively on the right kind of task, and a companion script enforces retry-once, dirty-tree, and session failure-circuit-breaker rules in code instead of prose you'd otherwise have to remember to follow every time.
+Delegate heavy-context, light-judgment work to the [GitHub Copilot CLI](https://github.com/github/copilot-cli), recovering only a compact result.
+
 
 ## What it does
 
@@ -16,6 +16,8 @@ Installing this plugin lets you drop the "Copilot Delegation Rules" section from
 
 All the mechanical rules — exact CLI flags, retry-once on failure, refusing write-mode delegation against a dirty working tree, and disabling delegation for the rest of a session after 2 cumulative failures — live in `scripts/copilot-companion.mjs`, not in prose.
 
+Every call runs with `--mode autopilot --no-ask-user` so a delegated task never stalls waiting on input nobody can provide (there is no TTY on the other end). Write/execute calls add `--allow-all` (tools + paths + urls) since they're expected to run fully unattended; explore/read-only calls get no permission flags — the CLI already runs read/shell tools without prompting but denies writes outright, which is what actually enforces "do not modify files" for exploration, not just the prompt wording.
+
 ## Requirements
 
 - **GitHub Copilot CLI** installed and authenticated: `copilot login`.
@@ -23,15 +25,16 @@ All the mechanical rules — exact CLI flags, retry-once on failure, refusing wr
 
 ## Configuration
 
-### Model
+### Model and context tier
 
-The only plugin-side setting is the **model slug**, in `scripts/copilot-companion.mjs`:
+Both are set via environment variables, so a plugin update never clobbers your local setting:
 
-```js
-const COPILOT_MODEL = "claude-opus-4.8"; // ← change this
+```sh
+export COPILOT_DELEGATE_MODEL="claude-opus-4.8"        # default; verified against copilot CLI v1.0.69-1.0.70
+export COPILOT_DELEGATE_CONTEXT_TIER="long_context"     # default
 ```
 
-Verified against `copilot` CLI v1.0.69: `claude-opus-4-8` (hyphenated) errors as unavailable, `claude-opus-4.8` (dotted) works. Model catalogs vary by account — run `/copilot-delegate:setup --verify-auth` after installing to confirm the configured model actually responds on your account, and edit this one line if it doesn't.
+Verified against `copilot` CLI v1.0.69-1.0.70: `claude-opus-4-8` (hyphenated) errors as unavailable, `claude-opus-4.8` (dotted) works. Model catalogs vary by account — run `/copilot-delegate:setup --verify-auth` after installing to confirm the configured model actually responds on your account, and set `COPILOT_DELEGATE_MODEL` if it doesn't.
 
 ## Usage
 

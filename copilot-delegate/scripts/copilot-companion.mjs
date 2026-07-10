@@ -11,10 +11,11 @@ import {
 } from "./state-helpers.mjs";
 
 // ---- Fixed policy constants (single source of truth) ----
-// Verified against `copilot` CLI v1.0.69: "claude-opus-4-8" (hyphenated) errors as unavailable,
-// "claude-opus-4.8" (dotted) works. If your account's model catalog differs, change this one line.
-const COPILOT_MODEL = "claude-opus-4.8"; // ← change this
-const COPILOT_CONTEXT_TIER = "long_context";
+// Verified against `copilot` CLI v1.0.69-1.0.70: "claude-opus-4-8" (hyphenated) errors as unavailable,
+// "claude-opus-4.8" (dotted) works. Model catalogs vary by account — override with the
+// COPILOT_DELEGATE_MODEL env var instead of editing this file, so plugin updates don't clobber it.
+const COPILOT_MODEL = process.env.COPILOT_DELEGATE_MODEL || "claude-opus-4.8";
+const COPILOT_CONTEXT_TIER = process.env.COPILOT_DELEGATE_CONTEXT_TIER || "long_context";
 const RETRY_BACKOFF_MS = 2000;
 
 function fail(code, message) {
@@ -66,9 +67,20 @@ function buildTaskArgs(prompt, write) {
     "--output-format",
     "text",
     "--silent",
+    // Non-interactive delegation must never sit waiting for input nobody can provide.
+    // --mode autopilot makes the CLI push through multi-step work instead of pausing to ask
+    // "should I continue?" (verified: it does NOT bypass tool/path/url permission checks below).
+    "--mode",
+    "autopilot",
+    "--no-ask-user",
   ];
   // Deliberately no --effort: the CLI rejects reasoning-effort flags for Claude models.
-  if (write) args.push("--allow-all-tools");
+  // Write/execute tasks run fully unattended, so use the full non-interactive bypass (tools + paths
+  // + urls) — --allow-all-tools alone still lets a build/test step stall on a path or URL prompt.
+  // Explore/read-only tasks deliberately get no permission flags: the CLI already allows read/shell
+  // tools without prompting but denies writes outright, which is what actually enforces "do not
+  // modify files" for exploration — verified empirically, not just via prompt instruction.
+  if (write) args.push("--allow-all");
   return args;
 }
 
@@ -206,7 +218,7 @@ async function handleSetup(argv) {
         ok: false,
         code: modelUnavailable ? "MODEL_UNAVAILABLE" : "AUTH_CHECK_FAILED",
         message: modelUnavailable
-          ? `Model "${COPILOT_MODEL}" is not available on this account. Edit COPILOT_MODEL in scripts/copilot-companion.mjs to a model your account's catalog supports.`
+          ? `Model "${COPILOT_MODEL}" is not available on this account. Set the COPILOT_DELEGATE_MODEL environment variable to a model your account's catalog supports.`
           : `Live auth check failed (${pingVerdict.code}): ${pingVerdict.reason}. Run 'copilot login'.`,
         detail: pingVerdict.reason,
         ...report,

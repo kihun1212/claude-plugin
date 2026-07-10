@@ -1,6 +1,6 @@
 {
   "name": "copilot-delegate",
-  "description": "Delegate heavy-context, light-judgment work (multi-file exploration, boilerplate/test code, mechanical refactors, build/test verification) to the GitHub Copilot CLI through a token-isolated forwarding agent, recovering only a compact result. Enforces retry-once, dirty-tree, and session failure-circuit-breaker rules in code instead of CLAUDE.md prose.",
+  "description": "Delegate heavy-context, light-judgment work (multi-file exploration, boilerplate/test code, mechanical refactors, build/test verification) to the GitHub Copilot CLI through a token-isolated forwarding agent, recovering only a compact result. Enforces retry-once, dirty-tree, and session failure-circuit-breaker rules in code.",
   "version": "0.0.1",
   "author": {
     "name": "kihoon"
